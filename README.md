@@ -1,58 +1,155 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PAPAN
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Pusat Arsip Persediaan & Aset Niaga** — Sistem manajemen retail modern untuk UKM.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Layer | Teknologi |
+|-------|-----------|
+| Backend | Laravel 12, PHP 8.4 |
+| Frontend | React 19, TypeScript, Inertia.js |
+| Styling | Tailwind CSS 4 |
+| Charts | Recharts (lazy-loaded) |
+| PDF | DomPDF |
+| RBAC | Spatie Laravel Permission + custom middleware |
+| Database | MySQL 8 |
+| Build | Vite 8 |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Point of Sale (POS)
+- 4 metode pembayaran: Tunai, Transfer, Split, Kredit
+- Barcode scanner (AJAX real-time)
+- Pending transactions (simpan & lanjutkan nanti)
+- Shift management (buka/tutup shift, saldo, selisih)
+- Void transaction (owner only, verifikasi sandi)
+- Retur/refund dengan restore stok
+- Cetak struk thermal (75mm PDF)
 
-## Learning Laravel
+### Inventaris
+- CRUD barang dengan variant generator
+- Smart restock alert (prediksi stok habis)
+- Barang masuk/keluar dengan konversi satuan
+- Peminjaman barang dengan tracking status
+- Stock opname 2-step (proses lalu owner approve)
+- Cetak label barcode (3x7 grid A4)
+- Owner stock correction dengan audit log
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Keuangan
+- Biaya operasional dengan recurring expense otomatis
+- Laporan laba rugi (pendapatan, HPP, pengeluaran, laba bersih)
+- Piutang dengan cicilan parsial dan auto-lunas
+- Cetak laporan PDF (landscape A4)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Member & Pelanggan
+- Kode member auto-generate (MEM-001, dst)
+- Sistem poin (configurable min belanja & poin dapat)
+- Tracking piutang per pelanggan
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Modern UX
+- Dark mode dengan theme switcher (Light/Dark/Auto)
+- Command palette (Ctrl+K) untuk navigasi cepat
+- Keyboard shortcuts (F2=Kasir, F3=Barang, dll) — configurable oleh owner
+- Real-time notifications (stok kritis, piutang jatuh tempo)
+- PWA ready (installable, offline fallback)
+- Responsive design (mobile-friendly)
 
-## Agentic Development
+### Keamanan
+- RBAC middleware: Owner, Petugas Gudang, Kasir
+- FOR UPDATE row locking pada operasi stok
+- Database transactions pada semua operasi multi-tabel
+- Password hashing (bcrypt)
+- Activity logging pada semua aksi penting
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Quick Start
+
+### Requirements
+- PHP 8.2+
+- MySQL 8.0+
+- Node.js 18+
+- Composer
+
+### Instalasi
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/s4rt4/papan.git
+cd papan
 
-php artisan boost:install
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Edit `.env` — sesuaikan database:
 
-## Contributing
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=papan
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Jalankan
 
-## Code of Conduct
+```bash
+npm run dev
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Buka di browser. **Database, tabel, dan user default otomatis dibuat saat pertama kali diakses.**
 
-## Security Vulnerabilities
+### Akun Default
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Username | Password | Role |
+|----------|----------|------|
+| `owner` | `owner` | Owner (full access) |
+| `gudang` | `gudang` | Petugas Gudang |
+| `kasir` | `kasir` | Kasir |
+
+## Hak Akses per Role
+
+| Modul | Owner | Gudang | Kasir |
+|-------|:-----:|:------:|:-----:|
+| Dashboard | Y | Y | Y |
+| Inventaris | Y | Y | - |
+| POS / Kasir | Y | - | Y |
+| Retur | Y | - | Y |
+| Keuangan | Y | - | - |
+| Laba Rugi | Y | - | - |
+| Laporan Penjualan | Y | - | Y |
+| Laporan Inventaris | Y | Y | - |
+| Member | Y | - | Y |
+| Piutang | Y | - | Y |
+| Pengguna | Y | - | - |
+| Pengaturan | Y | - | - |
+| Log Aktivitas | Y | - | - |
+
+## Keyboard Shortcuts
+
+| Key | Aksi |
+|-----|------|
+| `Ctrl+K` | Command palette |
+| `F2` | Buka Kasir |
+| `F3` | Data Barang |
+| `F4` | Barang Masuk |
+| `F8` | Laporan Penjualan |
+| `F9` | Dashboard |
+| `Shift+?` | Shortcut cheatsheet |
+
+Shortcuts dapat dikustomisasi di **Pengaturan > Shortcuts** (owner only).
+
+## Project Stats
+
+- 82 routes
+- 27 React pages
+- 20 Eloquent models
+- 19 controllers
+- 6 PDF templates
+- 17 database migrations
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
