@@ -2,6 +2,8 @@ import { useState, FormEvent, useCallback } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Pagination from '@/Components/Pagination';
+import BrandedDialog from '@/Components/BrandedDialog';
+import { useBrandedDialog } from '@/hooks/use-branded-dialog';
 import { User, PaginatedData } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +28,7 @@ export default function PenggunaIndex({ pengguna: users, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
+    const { dialogProps, danger } = useBrandedDialog();
 
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         nama: '',
@@ -76,8 +79,9 @@ export default function PenggunaIndex({ pengguna: users, filters }: Props) {
         }
     }
 
-    function handleDelete(id: number) {
-        if (confirm('Yakin ingin menghapus pengguna ini?')) {
+    async function handleDelete(id: number) {
+        const confirmed = await danger('Hapus Pengguna', 'Yakin ingin menghapus pengguna ini? Data tidak dapat dikembalikan.');
+        if (confirmed) {
             router.delete(`/pengguna/${id}`);
         }
     }
@@ -250,6 +254,8 @@ export default function PenggunaIndex({ pengguna: users, filters }: Props) {
                     </div>
                 </div>
             )}
+
+            <BrandedDialog {...dialogProps} />
         </AuthenticatedLayout>
     );
 }

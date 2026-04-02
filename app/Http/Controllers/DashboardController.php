@@ -89,16 +89,25 @@ class DashboardController extends Controller
             ->limit(10)
             ->get(['id', 'nama_barang', 'stok', 'satuan_jual']);
 
-        // Calculate prioritas_belanja: items estimated to run out in <= 3 days
-        $allBarang = Barang::where('stok', '>', 0)->get();
-        $prioritasBelanja = [];
-        foreach ($allBarang as $barang) {
-            $avgDaily = PenjualanDetail::where('barang_id', $barang->id)
-                ->whereHas('penjualan', fn($q) => $q->where('tanggal', '>=', now()->subDays(30)))
-                ->sum('jumlah') / 30;
+        // Single query: average daily sales per barang in last 30 days
+        $avgSales = DB::table('penjualan_detail')
+            ->join('penjualan', 'penjualan.id', '=', 'penjualan_detail.penjualan_id')
+            ->where('penjualan.tanggal', '>=', now()->subDays(30))
+            ->select('penjualan_detail.barang_id', DB::raw('SUM(penjualan_detail.jumlah) / 30 as avg_daily'))
+            ->groupBy('penjualan_detail.barang_id')
+            ->having('avg_daily', '>', 0)
+            ->pluck('avg_daily', 'barang_id');
 
-            if ($avgDaily > 0) {
-                $estimasi = (int) ceil($barang->stok / $avgDaily);
+        // Calculate prioritas belanja from the avg data
+        $prioritasBelanja = [];
+        $barangWithStok = Barang::where('stok', '>', 0)
+            ->whereIn('id', $avgSales->keys())
+            ->get(['id', 'nama_barang', 'stok', 'satuan_jual']);
+
+        foreach ($barangWithStok as $barang) {
+            $avg = $avgSales[$barang->id] ?? 0;
+            if ($avg > 0) {
+                $estimasi = (int) ceil($barang->stok / $avg);
                 if ($estimasi <= 3) {
                     $prioritasBelanja[] = [
                         'id' => $barang->id,

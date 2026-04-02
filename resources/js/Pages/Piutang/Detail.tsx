@@ -213,12 +213,13 @@ export default function PiutangDetail({ piutang, sisa }: Props) {
                                         <th className="px-4 py-2 text-left font-medium text-muted-foreground">Metode</th>
                                         <th className="px-4 py-2 text-left font-medium text-muted-foreground">Petugas</th>
                                         <th className="px-4 py-2 text-left font-medium text-muted-foreground">Catatan</th>
+                                        <th className="px-4 py-2 text-center font-medium text-muted-foreground">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {(!piutang.pembayaran || piutang.pembayaran.length === 0) ? (
                                         <tr>
-                                            <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                                            <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                                                 Belum ada pembayaran.
                                             </td>
                                         </tr>
@@ -230,6 +231,19 @@ export default function PiutangDetail({ piutang, sisa }: Props) {
                                                 <td className="px-4 py-2 capitalize">{p.metode_pembayaran || '-'}</td>
                                                 <td className="px-4 py-2">{p.user?.nama || '-'}</td>
                                                 <td className="px-4 py-2 text-muted-foreground">{p.catatan || '-'}</td>
+                                                <td className="px-4 py-2 text-center">
+                                                    <a
+                                                        href={`/cetak/cicilan/${p.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                                                    >
+                                                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                                        </svg>
+                                                        Cetak
+                                                    </a>
+                                                </td>
                                             </tr>
                                         ))
                                     )}

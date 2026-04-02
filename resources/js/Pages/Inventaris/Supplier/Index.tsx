@@ -2,6 +2,8 @@ import { useState, FormEvent, useCallback } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Pagination from '@/Components/Pagination';
+import BrandedDialog from '@/Components/BrandedDialog';
+import { useBrandedDialog } from '@/hooks/use-branded-dialog';
 import { Supplier, PaginatedData } from '@/types';
 
 interface Props {
@@ -13,6 +15,7 @@ export default function SupplierIndex({ suppliers, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
+    const { dialogProps, danger } = useBrandedDialog();
 
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         nama_supplier: '',
@@ -61,8 +64,9 @@ export default function SupplierIndex({ suppliers, filters }: Props) {
         }
     }
 
-    function handleDelete(id: number) {
-        if (confirm('Yakin ingin menghapus supplier ini?')) {
+    async function handleDelete(id: number) {
+        const confirmed = await danger('Hapus Supplier', 'Yakin ingin menghapus supplier ini? Data tidak dapat dikembalikan.');
+        if (confirmed) {
             router.delete(`/inventaris/supplier/${id}`);
         }
     }
@@ -215,6 +219,8 @@ export default function SupplierIndex({ suppliers, filters }: Props) {
                     </div>
                 </div>
             )}
+
+            <BrandedDialog {...dialogProps} />
         </AuthenticatedLayout>
     );
 }

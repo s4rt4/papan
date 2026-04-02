@@ -28,8 +28,22 @@ class BarangController extends Controller
 
         $barang = $query->latest()->paginate(20)->withQueryString();
 
-        $barang->through(function ($item) {
-            $item->estimasi_habis = $this->hitungEstimasiHabis($item);
+        // Single aggregated query for avg daily sales (replaces N+1)
+        $barangIds = $barang->pluck('id');
+        $avgSales = DB::table('penjualan_detail')
+            ->join('penjualan', 'penjualan.id', '=', 'penjualan_detail.penjualan_id')
+            ->where('penjualan.tanggal', '>=', now()->subDays(30))
+            ->whereIn('penjualan_detail.barang_id', $barangIds)
+            ->select('penjualan_detail.barang_id', DB::raw('SUM(penjualan_detail.jumlah) / 30 as avg_daily'))
+            ->groupBy('penjualan_detail.barang_id')
+            ->having('avg_daily', '>', 0)
+            ->pluck('avg_daily', 'barang_id');
+
+        $barang->through(function ($item) use ($avgSales) {
+            $avg = $avgSales[$item->id] ?? 0;
+            $item->estimasi_habis = ($avg > 0 && $item->stok > 0)
+                ? (int) ceil($item->stok / $avg)
+                : null;
             return $item;
         });
 

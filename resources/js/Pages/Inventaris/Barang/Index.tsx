@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Pagination from '@/Components/Pagination';
+import BrandedDialog from '@/Components/BrandedDialog';
+import { useBrandedDialog } from '@/hooks/use-branded-dialog';
 import { Barang, PaginatedData } from '@/types';
 import { formatRupiah, formatNumber } from '@/lib/utils';
 
@@ -16,6 +18,7 @@ interface Props {
 
 export default function BarangIndex({ barang, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
+    const { dialogProps, danger } = useBrandedDialog();
 
     const handleSearch = useCallback(
         (value: string) => {
@@ -28,8 +31,9 @@ export default function BarangIndex({ barang, filters }: Props) {
         []
     );
 
-    function handleDelete(id: number) {
-        if (confirm('Yakin ingin menghapus barang ini?')) {
+    async function handleDelete(id: number) {
+        const confirmed = await danger('Hapus Barang', 'Yakin ingin menghapus barang ini? Data tidak dapat dikembalikan.');
+        if (confirmed) {
             router.delete(`/inventaris/barang/${id}`);
         }
     }
@@ -136,6 +140,7 @@ export default function BarangIndex({ barang, filters }: Props) {
                     </div>
                 </div>
             </div>
+            <BrandedDialog {...dialogProps} />
         </AuthenticatedLayout>
     );
 }

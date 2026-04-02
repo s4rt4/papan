@@ -166,6 +166,7 @@ Route::middleware('auth')->group(function () {
         Route::get('struk/{penjualan}', [CetakController::class, 'struk'])->name('struk');
         Route::get('laporan-pos', [CetakController::class, 'laporanPos'])->name('laporan-pos');
         Route::get('retur/{retur}', [CetakController::class, 'returStruk'])->name('retur');
+        Route::get('cicilan/{pembayaran}', [CetakController::class, 'strukCicilan'])->name('cicilan');
         Route::get('laporan-inventaris', [CetakController::class, 'laporanInventaris'])->name('laporan-inventaris')->middleware('role:owner,petugas_gudang');
         Route::get('label-barcode', [CetakController::class, 'labelBarcode'])->name('label-barcode')->middleware('role:owner,petugas_gudang');
         Route::get('laba-rugi', [CetakController::class, 'labaRugi'])->name('laba-rugi')->middleware('role:owner');

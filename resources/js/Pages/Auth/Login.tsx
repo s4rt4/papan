@@ -6,6 +6,7 @@ export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
         username: '',
         password: '',
+        remember: false,
     });
 
     function submit(e: FormEvent) {
@@ -42,6 +43,19 @@ export default function Login() {
                             placeholder="Masukkan password"
                         />
                         {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password}</p>}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="remember"
+                            checked={data.remember}
+                            onChange={(e) => setData('remember', e.target.checked)}
+                            className="h-4 w-4 rounded border-input text-primary focus:ring-primary/20"
+                        />
+                        <label htmlFor="remember" className="text-sm text-muted-foreground select-none">
+                            Ingat saya
+                        </label>
                     </div>
 
                     <button

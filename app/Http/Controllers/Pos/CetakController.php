@@ -11,6 +11,7 @@ use App\Models\Pengaturan;
 use App\Models\Pengeluaran;
 use App\Models\Penjualan;
 use App\Models\PenjualanDetail;
+use App\Models\PiutangPembayaran;
 use App\Models\Retur;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -129,6 +130,17 @@ class CetakController extends Controller
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-inventaris.pdf');
+    }
+
+    public function strukCicilan(PiutangPembayaran $pembayaran)
+    {
+        $pembayaran->load(['piutang.penjualan', 'user:id,nama']);
+        $pengaturan = $this->pengaturan();
+
+        $pdf = Pdf::loadView('pdf.struk-cicilan', compact('pembayaran', 'pengaturan'));
+        $pdf->setPaper([0, 0, 212.6, 566.9]);
+
+        return $pdf->stream("cicilan-{$pembayaran->id}.pdf");
     }
 
     public function labelBarcode(Request $request)

@@ -2,6 +2,8 @@ import { useState, FormEvent, useCallback } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Pagination from '@/Components/Pagination';
+import BrandedDialog from '@/Components/BrandedDialog';
+import { useBrandedDialog } from '@/hooks/use-branded-dialog';
 import { Member, PaginatedData } from '@/types';
 import { formatNumber } from '@/lib/utils';
 import { usePageProps } from '@/hooks/use-page-props';
@@ -19,6 +21,7 @@ export default function MemberIndex({ members, filters }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [showPoinModal, setShowPoinModal] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
+    const { dialogProps, danger } = useBrandedDialog();
 
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         nama_member: '',
@@ -79,8 +82,9 @@ export default function MemberIndex({ members, filters }: Props) {
         });
     }
 
-    function handleDelete(id: number) {
-        if (confirm('Yakin ingin menghapus member ini?')) {
+    async function handleDelete(id: number) {
+        const confirmed = await danger('Hapus Member', 'Yakin ingin menghapus member ini? Data tidak dapat dikembalikan.');
+        if (confirmed) {
             router.delete(`/member/${id}`);
         }
     }
@@ -320,6 +324,8 @@ export default function MemberIndex({ members, filters }: Props) {
                     </div>
                 </div>
             )}
+
+            <BrandedDialog {...dialogProps} />
         </AuthenticatedLayout>
     );
 }
