@@ -52,7 +52,7 @@ const navigation: NavItem[] = [
         ],
     },
     { label: 'Pengguna', href: '/pengguna', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', roles: ['owner'] },
-    { label: 'Pengaturan', href: '/pengaturan', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', roles: ['owner'] },
+    { label: 'Pengaturan', href: '/pengaturan', icon: 'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z', roles: ['owner'] },
     { label: 'Log Aktivitas', href: '/log', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', roles: ['owner'] },
 ];
 
@@ -74,7 +74,10 @@ interface SidebarProps {
 export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
     const { auth } = useAuth() ? { auth: useAuth() } : { auth: { user: null } };
     const user = auth.user;
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const pengaturan = (props as any).pengaturan;
+    const companyName = pengaturan?.nama_perusahaan || 'PAPAN';
+    const companyLogo = pengaturan?.logo ? `/storage/${pengaturan.logo}` : null;
 
     const filteredNav = navigation.filter(
         (item) => user && item.roles.includes(user.level),
@@ -94,10 +97,14 @@ export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: 
             >
                 {/* Header */}
                 <div className={cn('flex h-16 items-center border-b border-white/10', collapsed ? 'justify-center px-2' : 'gap-3 px-6')}>
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
-                        P
-                    </div>
-                    {!collapsed && <span className="text-lg font-bold tracking-tight">PAPAN</span>}
+                    {companyLogo ? (
+                        <img src={companyLogo} alt={companyName} className="h-8 w-8 shrink-0 rounded-lg object-contain" />
+                    ) : (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
+                            {companyName.charAt(0)}
+                        </div>
+                    )}
+                    {!collapsed && <span className="text-lg font-bold tracking-tight">{companyName}</span>}
                 </div>
 
                 {/* Nav */}

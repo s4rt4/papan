@@ -10,6 +10,7 @@ interface Props {
 
 export default function StorefrontLayout({ title, children }: PropsWithChildren<Props>) {
     const { auth, pengaturan, flash } = usePage<{ props: ShopPageProps }>().props as unknown as ShopPageProps;
+    const companyName = pengaturan?.nama_perusahaan || 'PAPAN';
     const { count } = useCart();
     const [searchQuery, setSearchQuery] = useState('');
     const [profileOpen, setProfileOpen] = useState(false);
@@ -91,10 +92,14 @@ export default function StorefrontLayout({ title, children }: PropsWithChildren<
 
                         {/* Logo */}
                         <Link href="/shop" className="flex shrink-0 items-center gap-2">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
-                                P
-                            </div>
-                            <span className="hidden text-xl font-bold tracking-tight text-foreground sm:block">PAPAN</span>
+                            {pengaturan?.logo ? (
+                                <img src={`/storage/${pengaturan.logo}`} alt={companyName} className="h-9 w-9 rounded-xl object-contain" />
+                            ) : (
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
+                                    {companyName.charAt(0)}
+                                </div>
+                            )}
+                            <span className="hidden text-xl font-bold tracking-tight text-foreground sm:block">{companyName}</span>
                         </Link>
 
                         {/* Search */}
@@ -225,14 +230,15 @@ export default function StorefrontLayout({ title, children }: PropsWithChildren<
                             {/* Company */}
                             <div>
                                 <div className="mb-4 flex items-center gap-2">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
-                                        P
-                                    </div>
-                                    <span className="text-lg font-bold">PAPAN</span>
+                                    {pengaturan?.logo ? (
+                                        <img src={`/storage/${pengaturan.logo}`} alt={companyName} className="h-8 w-8 rounded-lg object-contain" />
+                                    ) : (
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
+                                            {companyName.charAt(0)}
+                                        </div>
+                                    )}
+                                    <span className="text-lg font-bold">{companyName}</span>
                                 </div>
-                                <p className="text-sm text-sidebar-foreground/70">
-                                    {pengaturan?.nama_perusahaan || 'PAPAN Store'}
-                                </p>
                                 {pengaturan?.alamat && (
                                     <p className="mt-2 text-sm text-sidebar-foreground/60">{pengaturan.alamat}</p>
                                 )}
@@ -282,7 +288,7 @@ export default function StorefrontLayout({ title, children }: PropsWithChildren<
                         </div>
 
                         <div className="mt-8 border-t border-white/10 pt-6 text-center text-xs text-sidebar-foreground/50">
-                            &copy; {new Date().getFullYear()} {pengaturan?.nama_perusahaan || 'PAPAN'}. Semua hak dilindungi.
+                            &copy; {new Date().getFullYear()} {companyName}. Semua hak dilindungi.
                         </div>
                     </div>
                 </footer>

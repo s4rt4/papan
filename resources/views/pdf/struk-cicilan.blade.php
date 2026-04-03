@@ -16,6 +16,11 @@
 </head>
 <body>
     {{-- Header --}}
+    @if($pengaturan->logo && file_exists(storage_path('app/public/' . $pengaturan->logo)))
+        <div class="center" style="margin-bottom: 2mm;">
+            <img src="{{ storage_path('app/public/' . $pengaturan->logo) }}" style="height: 12mm; max-width: 25mm;" />
+        </div>
+    @endif
     <div class="center bold" style="font-size: 12px;">{{ $pengaturan->nama_perusahaan ?? 'TOKO' }}</div>
     <div class="center small">{{ $pengaturan->alamat ?? '' }}</div>
     <div class="center small">{{ $pengaturan->telepon ?? '' }}</div>

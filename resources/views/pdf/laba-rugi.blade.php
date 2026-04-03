@@ -35,7 +35,11 @@
     @endphp
 
     <div class="header">
+        @if($pengaturan->logo && file_exists(storage_path('app/public/' . $pengaturan->logo)))
+            <img src="{{ storage_path('app/public/' . $pengaturan->logo) }}" style="height: 40px; margin-bottom: 5px;" />
+        @endif
         <h2>{{ $pengaturan->nama_perusahaan ?? 'TOKO' }}</h2>
+        @if($pengaturan->alamat)<p style="margin: 2px 0; font-size: 10px; color: #666;">{{ $pengaturan->alamat }}{{ $pengaturan->telepon ? ' | ' . $pengaturan->telepon : '' }}</p>@endif
         <h3>LAPORAN LABA RUGI</h3>
         <p>Periode: {{ $namaBulan[(int)$bulan] ?? '' }} {{ $tahun }}</p>
     </div>
