@@ -2,23 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Member extends Model
+class Member extends Authenticatable
 {
+    use HasFactory;
+
     protected $table = 'member';
 
     protected $fillable = [
-        'nama_member',
-        'kode_member',
-        'no_hp',
-        'telepon',
-        'alamat',
-        'poin',
+        'kode_member', 'nama_member', 'email', 'password', 'no_hp', 'telepon', 'alamat', 'poin',
     ];
 
-    public function penjualan()
+    protected $hidden = ['password', 'remember_token'];
+
+    protected function casts(): array
     {
-        return $this->hasMany(Penjualan::class);
+        return ['password' => 'hashed'];
     }
+
+    public function penjualan() { return $this->hasMany(Penjualan::class); }
+    public function orders() { return $this->hasMany(Order::class); }
 }

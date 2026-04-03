@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Inventaris;
 
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
+use App\Models\BarangImage;
 use App\Models\LogAktivitas;
 use App\Models\PenjualanDetail;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class BarangController extends Controller
@@ -213,6 +215,32 @@ class BarangController extends Controller
 
         return redirect()->route('inventaris.barang.index')
             ->with('success', "{$count} varian barang berhasil dibuat.");
+    }
+
+    public function uploadImages(Request $request, Barang $barang)
+    {
+        $request->validate([
+            'images' => 'required|array',
+            'images.*' => 'image|max:2048',
+        ]);
+
+        foreach ($request->file('images') as $i => $file) {
+            $path = $file->store('products', 'public');
+            $barang->images()->create([
+                'path' => $path,
+                'sort_order' => $barang->images()->count() + $i,
+            ]);
+        }
+
+        return back()->with('success', 'Gambar berhasil diupload.');
+    }
+
+    public function deleteImage(BarangImage $image)
+    {
+        Storage::disk('public')->delete($image->path);
+        $image->delete();
+
+        return back()->with('success', 'Gambar berhasil dihapus.');
     }
 
     private function hitungEstimasiHabis(Barang $barang): ?int

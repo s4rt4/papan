@@ -268,3 +268,63 @@ export interface PaginationLink {
     label: string;
     active: boolean;
 }
+
+export interface BarangImage {
+    id: number;
+    barang_id: number;
+    path: string;
+    sort_order: number;
+}
+
+export interface BarangWithImages extends Barang {
+    images: BarangImage[];
+}
+
+export interface Order {
+    id: number;
+    order_number: string;
+    member_id: number;
+    nama_penerima: string;
+    telepon: string;
+    alamat_pengiriman: string;
+    catatan: string | null;
+    subtotal: number;
+    ongkir: number;
+    total: number;
+    metode_pembayaran: 'cod' | 'transfer';
+    status: 'pending' | 'dikonfirmasi' | 'diproses' | 'dikirim' | 'selesai' | 'dibatalkan';
+    confirmed_at: string | null;
+    shipped_at: string | null;
+    completed_at: string | null;
+    admin_notes: string | null;
+    items?: OrderItem[];
+    member?: Member;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface OrderItem {
+    id: number;
+    order_id: number;
+    barang_id: number;
+    jumlah: number;
+    harga: number;
+    subtotal: number;
+    barang?: Barang;
+}
+
+export interface CustomerAuth {
+    customer: {
+        id: number;
+        nama_member: string;
+        email: string;
+        kode_member: string;
+        poin: number;
+    } | null;
+}
+
+export interface ShopPageProps {
+    auth: CustomerAuth;
+    pengaturan: Pengaturan | null;
+    flash: FlashMessages;
+}

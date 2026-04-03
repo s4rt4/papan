@@ -46,4 +46,9 @@ class Barang extends Model
     {
         return $this->hasMany(PenjualanDetail::class);
     }
+
+    public function images()
+    {
+        return $this->hasMany(BarangImage::class)->orderBy('sort_order');
+    }
 }

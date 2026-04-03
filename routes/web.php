@@ -27,10 +27,48 @@ use App\Http\Controllers\Pos\VoidController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\GoogleExportController;
+use App\Http\Controllers\Shop\CatalogController;
+use App\Http\Controllers\Shop\CartController;
+use App\Http\Controllers\Shop\CheckoutController;
+use App\Http\Controllers\Shop\CustomerAuthController;
+use App\Http\Controllers\Shop\OrderController as ShopOrderController;
+use App\Http\Controllers\Shop\ProfileController;
+use App\Http\Controllers\OrderManagementController;
+use App\Models\BarangImage;
 use Illuminate\Support\Facades\Route;
 
 // Offline page (for PWA)
 Route::get('/offline', fn () => view('offline'));
+
+// ============================================================
+// STOREFRONT ROUTES (public + customer auth)
+// ============================================================
+Route::middleware(\App\Http\Middleware\HandleStorefrontRequests::class)->group(function () {
+    // Public (no auth)
+    Route::get('/shop', [CatalogController::class, 'index'])->name('shop.index');
+    Route::get('/shop/product/{barang}', [CatalogController::class, 'show'])->name('shop.product');
+    Route::get('/shop/cart', [CartController::class, 'index'])->name('shop.cart');
+    Route::post('/shop/cart/validate', [CartController::class, 'validateStock'])->name('shop.cart.validate');
+
+    // Customer auth
+    Route::middleware('guest:customer')->group(function () {
+        Route::get('/shop/login', [CustomerAuthController::class, 'showLogin'])->name('shop.login');
+        Route::post('/shop/login', [CustomerAuthController::class, 'login']);
+        Route::get('/shop/register', [CustomerAuthController::class, 'showRegister'])->name('shop.register');
+        Route::post('/shop/register', [CustomerAuthController::class, 'register']);
+    });
+    Route::post('/shop/logout', [CustomerAuthController::class, 'logout'])->name('shop.logout')->middleware('auth:customer');
+
+    // Authenticated customer
+    Route::middleware('auth:customer')->group(function () {
+        Route::get('/shop/checkout', [CheckoutController::class, 'index'])->name('shop.checkout');
+        Route::post('/shop/checkout', [CheckoutController::class, 'store'])->name('shop.checkout.store');
+        Route::get('/shop/orders', [ShopOrderController::class, 'index'])->name('shop.orders');
+        Route::get('/shop/orders/{order}', [ShopOrderController::class, 'show'])->name('shop.orders.show');
+        Route::get('/shop/profile', [ProfileController::class, 'show'])->name('shop.profile');
+        Route::post('/shop/profile', [ProfileController::class, 'update'])->name('shop.profile.update');
+    });
+});
 
 // Guest routes
 Route::middleware('guest')->group(function () {
@@ -175,6 +213,19 @@ Route::middleware('auth')->group(function () {
     // LOG — owner only
     // ==========================================================
     Route::get('log', [LogController::class, 'index'])->name('log.index')->middleware('role:owner');
+
+    // ==========================================================
+    // PESANAN ONLINE (admin) — owner only
+    // ==========================================================
+    Route::middleware('role:owner')->group(function () {
+        Route::get('orders', [OrderManagementController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
+        Route::post('orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');
+    });
+
+    // Image upload for barang
+    Route::post('inventaris/barang/{barang}/images', [BarangController::class, 'uploadImages'])->name('inventaris.barang.images.upload')->middleware('role:owner,petugas_gudang');
+    Route::delete('inventaris/barang/images/{image}', [BarangController::class, 'deleteImage'])->name('inventaris.barang.images.delete')->middleware('role:owner,petugas_gudang');
 
     // ==========================================================
     // PDF / CETAK — semua role (akses tergantung data yang dimiliki)
