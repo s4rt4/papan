@@ -51,10 +51,10 @@ class PeminjamanController extends Controller
         ]);
 
         DB::transaction(function () use ($validated) {
-            $barang = Barang::findOrFail($validated['barang_id']);
+            $barang = Barang::lockForUpdate()->findOrFail($validated['barang_id']);
 
             if ($barang->stok < $validated['jumlah']) {
-                abort(422, 'Stok tidak mencukupi.');
+                abort(422, "Stok {$barang->nama_barang} tidak mencukupi. Sisa: {$barang->stok}");
             }
 
             Peminjaman::create([
@@ -87,7 +87,8 @@ class PeminjamanController extends Controller
         }
 
         DB::transaction(function () use ($peminjaman) {
-            $barang = $peminjaman->barang;
+            $peminjaman = Peminjaman::lockForUpdate()->findOrFail($peminjaman->id);
+            $barang = Barang::lockForUpdate()->findOrFail($peminjaman->barang_id);
 
             $barang->increment('stok', $peminjaman->jumlah);
 

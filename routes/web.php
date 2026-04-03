@@ -24,7 +24,9 @@ use App\Http\Controllers\Pos\KasirController;
 use App\Http\Controllers\Pos\LaporanPosController;
 use App\Http\Controllers\Pos\ReturController;
 use App\Http\Controllers\Pos\VoidController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\GoogleExportController;
 use Illuminate\Support\Facades\Route;
 
 // Offline page (for PWA)
@@ -48,6 +50,11 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard — semua role
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Notes / Scratchpad API
+    Route::get('api/notes', [NoteController::class, 'index'])->name('api.notes.index');
+    Route::post('api/notes', [NoteController::class, 'store'])->name('api.notes.store');
+    Route::delete('api/notes', [NoteController::class, 'destroy'])->name('api.notes.destroy');
 
     // Notifications — semua role
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications');
@@ -152,6 +159,16 @@ Route::middleware('auth')->group(function () {
         Route::post('pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
         Route::get('pengaturan/backup', [PengaturanController::class, 'backup'])->name('pengaturan.backup');
         Route::post('pengaturan/restore', [PengaturanController::class, 'restore'])->name('pengaturan.restore');
+    });
+
+    // ==========================================================
+    // GOOGLE EXPORT & OAUTH — owner only
+    // ==========================================================
+    Route::middleware('role:owner')->group(function () {
+        Route::get('export/penjualan', [GoogleExportController::class, 'exportPenjualan'])->name('export.penjualan');
+        Route::get('export/inventaris', [GoogleExportController::class, 'exportInventaris'])->name('export.inventaris');
+        Route::get('pengaturan/google/authorize', [GoogleExportController::class, 'authorize'])->name('pengaturan.google.authorize');
+        Route::get('pengaturan/google/callback', [GoogleExportController::class, 'callback'])->name('pengaturan.google.callback');
     });
 
     // ==========================================================

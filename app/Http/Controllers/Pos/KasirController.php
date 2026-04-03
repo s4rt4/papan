@@ -172,12 +172,13 @@ class KasirController extends Controller
                 'tanggal' => now(),
             ]);
 
-            return $penjualan->id;
+            return $penjualan;
         });
 
-        return redirect()->back()->with([
-            'success' => 'Transaksi berhasil diproses.',
-            'penjualan_id' => $penjualanId,
+        return Inertia::render('Pos/Sukses', [
+            'penjualan_id' => $penjualan->id,
+            'total_bayar' => $penjualan->total_bayar,
+            'metode_pembayaran' => $penjualan->metode_pembayaran,
         ]);
     }
 

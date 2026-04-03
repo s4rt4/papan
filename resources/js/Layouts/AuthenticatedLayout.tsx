@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import Sidebar from '@/Components/Sidebar';
 import FlashMessage from '@/Components/FlashMessage';
@@ -8,6 +8,7 @@ import NotificationBell from '@/Components/NotificationBell';
 import ShortcutCheatsheet from '@/Components/ShortcutCheatsheet';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { usePageProps } from '@/hooks/use-page-props';
+import { cn } from '@/lib/utils';
 
 interface Props {
     title?: string;
@@ -18,10 +19,22 @@ interface Props {
 export default function AuthenticatedLayout({ title, children, header }: Props) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showCheatsheet, setShowCheatsheet] = useState(false);
+    const [collapsed, setCollapsed] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return localStorage.getItem('papan-sidebar-collapsed') === 'true';
+    });
     const { auth } = usePageProps();
 
     const toggleCheatsheet = useCallback(() => setShowCheatsheet(prev => !prev), []);
     useKeyboardShortcuts(toggleCheatsheet);
+
+    function toggleCollapse() {
+        setCollapsed(prev => {
+            const next = !prev;
+            localStorage.setItem('papan-sidebar-collapsed', String(next));
+            return next;
+        });
+    }
 
     return (
         <>
@@ -30,9 +43,14 @@ export default function AuthenticatedLayout({ title, children, header }: Props) 
             <CommandPalette />
 
             <div className="min-h-screen bg-background">
-                <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                <Sidebar
+                    open={sidebarOpen}
+                    onClose={() => setSidebarOpen(false)}
+                    collapsed={collapsed}
+                    onToggleCollapse={toggleCollapse}
+                />
 
-                <div className="lg:pl-64">
+                <div className={cn('transition-all duration-300', collapsed ? 'lg:pl-[68px]' : 'lg:pl-64')}>
                     {/* Top bar */}
                     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/80 backdrop-blur-lg px-4 sm:px-6">
                         <button

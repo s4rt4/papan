@@ -36,8 +36,9 @@
     --radius-lg: 0.5rem;
 }
 
-/* Dark mode overrides */
-.dark {
+/* Dark mode — use html.dark to beat :root specificity */
+html.dark {
+    color-scheme: dark;
     --color-primary: #3b82f6;
     --color-primary-foreground: #ffffff;
     --color-sidebar: #020617;
@@ -58,10 +59,16 @@
     --color-card-foreground: #f1f5f9;
 }
 
-/* Form elements inherit theme colors */
-input, select, textarea {
-    color: var(--color-foreground);
+/* Form elements follow theme */
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+select,
+textarea {
     background-color: var(--color-card);
+    color: var(--color-foreground);
+}
+
+label {
+    color: var(--color-foreground);
 }
 
 input::placeholder, textarea::placeholder {

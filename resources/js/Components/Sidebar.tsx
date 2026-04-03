@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { useAuth } from '@/hooks/use-page-props';
 import { cn } from '@/lib/utils';
@@ -55,15 +55,22 @@ const navigation: NavItem[] = [
     { label: 'Log Aktivitas', href: '/log', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', roles: ['owner'] },
 ];
 
-function SvgIcon({ d }: { d: string }) {
+function SvgIcon({ d, className }: { d: string; className?: string }) {
     return (
-        <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <svg className={cn('h-5 w-5 shrink-0', className)} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d={d} />
         </svg>
     );
 }
 
-export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+interface SidebarProps {
+    open: boolean;
+    onClose: () => void;
+    collapsed: boolean;
+    onToggleCollapse: () => void;
+}
+
+export default function Sidebar({ open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
     const { auth } = useAuth() ? { auth: useAuth() } : { auth: { user: null } };
     const user = auth.user;
     const { url } = usePage();
@@ -79,32 +86,58 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
             )}
             <aside
                 className={cn(
-                    'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-sidebar text-sidebar-foreground transition-transform lg:translate-x-0',
+                    'fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 lg:translate-x-0',
                     open ? 'translate-x-0' : '-translate-x-full',
+                    collapsed ? 'w-[68px]' : 'w-64',
                 )}
             >
-                <div className="flex h-16 items-center gap-3 border-b border-white/10 px-6">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
+                {/* Header */}
+                <div className={cn('flex h-16 items-center border-b border-white/10', collapsed ? 'justify-center px-2' : 'gap-3 px-6')}>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
                         P
                     </div>
-                    <span className="text-lg font-bold tracking-tight">PAPAN</span>
+                    {!collapsed && <span className="text-lg font-bold tracking-tight">PAPAN</span>}
                 </div>
 
-                <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 scrollbar-none">
+                {/* Nav */}
+                <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-4 scrollbar-none">
                     {filteredNav.map((item) => (
-                        <NavItemComponent key={item.label} item={item} currentUrl={url} userLevel={user?.level} />
+                        <NavItemComponent
+                            key={item.label}
+                            item={item}
+                            currentUrl={url}
+                            userLevel={user?.level}
+                            collapsed={collapsed}
+                        />
                     ))}
                 </nav>
 
-                <div className="border-t border-white/10 p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sm font-semibold">
+                {/* Collapse toggle */}
+                <button
+                    onClick={onToggleCollapse}
+                    className="hidden border-t border-white/10 p-3 text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground lg:block"
+                    title={collapsed ? 'Perluas sidebar' : 'Kecilkan sidebar'}
+                >
+                    <svg
+                        className={cn('mx-auto h-5 w-5 transition-transform duration-300', collapsed && 'rotate-180')}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+
+                {/* User info */}
+                <div className={cn('border-t border-white/10', collapsed ? 'p-2' : 'p-4')}>
+                    <div className={cn('flex items-center', collapsed ? 'justify-center' : 'gap-3')}>
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-sm font-semibold" title={user?.nama}>
                             {user?.nama?.charAt(0).toUpperCase()}
                         </div>
-                        <div className="flex-1 truncate">
-                            <p className="text-sm font-medium">{user?.nama}</p>
-                            <p className="text-xs text-sidebar-foreground/60 capitalize">{user?.level?.replace('_', ' ')}</p>
-                        </div>
+                        {!collapsed && (
+                            <div className="flex-1 truncate">
+                                <p className="text-sm font-medium">{user?.nama}</p>
+                                <p className="text-xs text-sidebar-foreground/60 capitalize">{user?.level?.replace('_', ' ')}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </aside>
@@ -112,18 +145,87 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
     );
 }
 
-function NavItemComponent({ item, currentUrl, userLevel }: { item: NavItem; currentUrl: string; userLevel?: string }) {
-    const [expanded, setExpanded] = useState(false);
+function NavItemComponent({ item, currentUrl, userLevel, collapsed }: { item: NavItem; currentUrl: string; userLevel?: string; collapsed: boolean }) {
     const isActive = currentUrl.startsWith(item.href) && item.href !== '#';
     const hasChildren = item.children && item.children.length > 0;
-
-    // Auto-expand if child is active
     const childActive = hasChildren && item.children!.some((c) => currentUrl.startsWith(c.href));
 
     const [open, setOpen] = useState(childActive);
+    const [flyoutOpen, setFlyoutOpen] = useState(false);
+    const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
+    const triggerRef = React.useRef<HTMLDivElement>(null);
+    const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    function startClose() {
+        closeTimer.current = setTimeout(() => setFlyoutOpen(false), 200);
+    }
+    function cancelClose() {
+        if (closeTimer.current) clearTimeout(closeTimer.current);
+    }
+    function openFlyout() {
+        cancelClose();
+        if (triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            setFlyoutPos({ top: rect.top, left: rect.right + 4 });
+        }
+        setFlyoutOpen(true);
+    }
 
     if (hasChildren) {
         const filteredChildren = item.children!.filter((c) => userLevel && c.roles.includes(userLevel));
+
+        if (collapsed) {
+            return (
+                <>
+                    {/* Icon trigger */}
+                    <div
+                        ref={triggerRef}
+                        onMouseEnter={openFlyout}
+                        onMouseLeave={startClose}
+                        className={cn(
+                            'flex h-10 w-full cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-sidebar-accent',
+                            (childActive || flyoutOpen) && 'bg-sidebar-accent',
+                        )}
+                    >
+                        <SvgIcon d={item.icon} />
+                    </div>
+
+                    {/* Flyout submenu - fixed position, portal-like */}
+                    {flyoutOpen && (
+                        <div
+                            onMouseEnter={cancelClose}
+                            onMouseLeave={startClose}
+                            className="fixed z-[9999] min-w-[200px]"
+                            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+                        >
+                            {/* Invisible bridge */}
+                            <div className="absolute -left-2 top-0 h-full w-3" />
+                            <div className="rounded-xl border border-border bg-card py-2 shadow-2xl">
+                                <p className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                    {item.label}
+                                </p>
+                                <div className="mt-1">
+                                    {filteredChildren.map((child) => (
+                                        <Link
+                                            key={child.href}
+                                            href={child.href}
+                                            className={cn(
+                                                'flex items-center px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-primary/10 hover:text-primary',
+                                                currentUrl.startsWith(child.href) && 'bg-primary/10 font-medium text-primary',
+                                            )}
+                                        >
+                                            {child.label}
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        // Expanded: normal accordion
         return (
             <div>
                 <button
@@ -136,7 +238,7 @@ function NavItemComponent({ item, currentUrl, userLevel }: { item: NavItem; curr
                     <SvgIcon d={item.icon} />
                     <span className="flex-1 text-left">{item.label}</span>
                     <svg
-                        className={cn('h-4 w-4 transition-transform', open && 'rotate-90')}
+                        className={cn('h-4 w-4 transition-transform duration-200', open && 'rotate-90')}
                         fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -162,6 +264,27 @@ function NavItemComponent({ item, currentUrl, userLevel }: { item: NavItem; curr
         );
     }
 
+    // Single item (collapsed)
+    if (collapsed) {
+        return (
+            <div className="relative group">
+                <Link
+                    href={item.href}
+                    className={cn(
+                        'flex h-10 w-full items-center justify-center rounded-lg transition-colors hover:bg-sidebar-accent',
+                        isActive && 'bg-sidebar-accent text-white',
+                    )}
+                >
+                    <SvgIcon d={item.icon} />
+                </Link>
+                <div className="pointer-events-none absolute left-full top-1/2 z-[60] ml-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-foreground px-2.5 py-1.5 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    {item.label}
+                </div>
+            </div>
+        );
+    }
+
+    // Single item (expanded)
     return (
         <Link
             href={item.href}

@@ -62,7 +62,7 @@ export default function LabelIndex({ barangList }: Props) {
                         <div>
                             <label className="mb-2 block text-sm font-medium text-foreground">Sumber Data</label>
                             <div className="flex items-center gap-4">
-                                <label className="flex items-center gap-2 text-sm">
+                                <label className="flex items-center gap-2 text-sm text-foreground">
                                     <input
                                         type="radio"
                                         name="label_mode"
@@ -72,7 +72,7 @@ export default function LabelIndex({ barangList }: Props) {
                                     />
                                     Dari Database
                                 </label>
-                                <label className="flex items-center gap-2 text-sm">
+                                <label className="flex items-center gap-2 text-sm text-foreground">
                                     <input
                                         type="radio"
                                         name="label_mode"

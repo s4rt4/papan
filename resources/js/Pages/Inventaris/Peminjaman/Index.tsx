@@ -2,6 +2,8 @@ import { useState, FormEvent, useCallback } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Pagination from '@/Components/Pagination';
+import BrandedDialog from '@/Components/BrandedDialog';
+import { useBrandedDialog } from '@/hooks/use-branded-dialog';
 import { Peminjaman, PaginatedData } from '@/types';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
 
@@ -14,6 +16,7 @@ interface Props {
 export default function PeminjamanIndex({ peminjaman, barangList, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [showForm, setShowForm] = useState(false);
+    const { dialogProps, confirm: brandedConfirm, danger } = useBrandedDialog();
 
     const { data, setData, post, processing, errors, reset } = useForm({
         barang_id: '',
@@ -45,16 +48,14 @@ export default function PeminjamanIndex({ peminjaman, barangList, filters }: Pro
         });
     }
 
-    function handleKembalikan(id: number) {
-        if (confirm('Konfirmasi pengembalian barang ini?')) {
-            router.put(`/inventaris/peminjaman/${id}/kembalikan`);
-        }
+    async function handleKembalikan(id: number) {
+        const confirmed = await brandedConfirm('Konfirmasi Pengembalian', 'Apakah barang ini sudah dikembalikan?');
+        if (confirmed) router.post(`/inventaris/peminjaman/${id}/kembalikan`);
     }
 
-    function handleDelete(id: number) {
-        if (confirm('Yakin ingin menghapus data peminjaman ini?')) {
-            router.delete(`/inventaris/peminjaman/${id}`);
-        }
+    async function handleDelete(id: number) {
+        const confirmed = await danger('Hapus Peminjaman', 'Yakin ingin menghapus data peminjaman ini?');
+        if (confirmed) router.delete(`/inventaris/peminjaman/${id}`);
     }
 
     return (
@@ -254,6 +255,7 @@ export default function PeminjamanIndex({ peminjaman, barangList, filters }: Pro
                     </div>
                 </div>
             </div>
+            <BrandedDialog {...dialogProps} />
         </AuthenticatedLayout>
     );
 }

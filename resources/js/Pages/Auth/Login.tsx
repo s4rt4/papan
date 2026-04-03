@@ -16,7 +16,7 @@ export default function Login() {
 
     return (
         <GuestLayout title="Login">
-            <form onSubmit={submit} className="rounded-2xl bg-white p-8 shadow-xl">
+            <form onSubmit={submit} className="rounded-2xl border border-border bg-card p-8 shadow-xl">
                 <h2 className="mb-6 text-center text-lg font-semibold text-foreground">Masuk ke akun Anda</h2>
 
                 <div className="space-y-4">

@@ -3,6 +3,7 @@ import { Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { usePageProps } from '@/hooks/use-page-props';
 import { formatRupiah, formatNumber } from '@/lib/utils';
+import NoteScratchpad from '@/Components/NoteScratchpad';
 
 const LazyChart = lazy(() =>
     import('recharts').then((mod) => ({
@@ -66,6 +67,15 @@ interface GudangStats {
     prioritas_belanja: PrioritasBelanja[];
 }
 
+interface ItemTerjual {
+    id: number;
+    nama_barang: string;
+    kode_barang: string;
+    jumlah: number;
+    subtotal: number;
+    tanggal: string;
+}
+
 interface KasirStats {
     penjualan_hari_ini: number;
     jumlah_transaksi: number;
@@ -73,6 +83,7 @@ interface KasirStats {
     uang_mandek: number;
     jatuh_tempo_lewat: number;
     pelunasan_bulan_ini: number;
+    item_terjual_terakhir: ItemTerjual[];
 }
 
 interface DashboardProps {
@@ -201,6 +212,8 @@ function OwnerDashboard({ stats }: { stats: OwnerStats }) {
                     <LazyChart data={chartData} />
                 </Suspense>
             </div>
+
+            <NoteScratchpad />
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <StokKritisTable items={stats.stok_kritis} />
@@ -345,7 +358,20 @@ function KasirDashboard({ stats }: { stats: KasirStats }) {
                 />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            {/* Buka Kasir Button */}
+            <div className="mb-6">
+                <Link
+                    href="/pos/kasir"
+                    className="inline-flex items-center gap-3 rounded-xl bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
+                >
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+                    </svg>
+                    BUKA KASIR
+                </Link>
+            </div>
+
+            <div className="mb-6 grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-border bg-card p-6">
                     <p className="text-sm text-muted-foreground">Uang Mandek (Piutang)</p>
                     <p className="mt-1 text-2xl font-bold text-destructive">{formatRupiah(stats.uang_mandek)}</p>
@@ -357,6 +383,39 @@ function KasirDashboard({ stats }: { stats: KasirStats }) {
                 <div className="rounded-xl border border-border bg-card p-6">
                     <p className="text-sm text-muted-foreground">Pelunasan Bulan Ini</p>
                     <p className="mt-1 text-2xl font-bold text-green-600">{formatRupiah(stats.pelunasan_bulan_ini)}</p>
+                </div>
+            </div>
+
+            {/* Item Terjual Terakhir */}
+            <div className="rounded-xl border border-border bg-card">
+                <div className="border-b border-border px-6 py-4">
+                    <h3 className="font-semibold text-foreground">Item Terjual Terakhir</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-border bg-muted/50">
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Kode</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nama Barang</th>
+                                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Qty</th>
+                                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {stats.item_terjual_terakhir.length === 0 ? (
+                                <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Belum ada penjualan hari ini.</td></tr>
+                            ) : (
+                                stats.item_terjual_terakhir.map((item, i) => (
+                                    <tr key={i} className="border-b border-border hover:bg-muted/30">
+                                        <td className="px-4 py-2.5 text-muted-foreground">{item.kode_barang}</td>
+                                        <td className="px-4 py-2.5 text-foreground">{item.nama_barang}</td>
+                                        <td className="px-4 py-2.5 text-center text-foreground">{item.jumlah}</td>
+                                        <td className="px-4 py-2.5 text-right font-medium text-foreground">{formatRupiah(item.subtotal)}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </>

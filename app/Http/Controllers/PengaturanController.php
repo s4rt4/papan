@@ -32,6 +32,9 @@ class PengaturanController extends Controller
             'poin_dapat' => 'nullable|integer|min:0',
             'enable_shift' => 'boolean',
             'keyboard_shortcuts' => 'nullable|string',
+            'google_client_id' => 'nullable|string|max:255',
+            'google_client_secret' => 'nullable|string|max:255',
+            'google_drive_folder_id' => 'nullable|string|max:255',
         ]);
 
         $pengaturan = Pengaturan::first();

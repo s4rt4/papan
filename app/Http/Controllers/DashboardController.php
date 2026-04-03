@@ -158,6 +158,18 @@ class DashboardController extends Controller
             'pelunasan_bulan_ini' => PiutangPembayaran::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah'),
+            'item_terjual_terakhir' => PenjualanDetail::with('barang:id,kode_barang,nama_barang')
+                ->whereHas('penjualan', fn($q) => $q->whereDate('tanggal', $today))
+                ->latest()
+                ->limit(50)
+                ->get()
+                ->map(fn($d) => [
+                    'id' => $d->id,
+                    'nama_barang' => $d->barang->nama_barang ?? '-',
+                    'kode_barang' => $d->barang->kode_barang ?? '-',
+                    'jumlah' => $d->jumlah,
+                    'subtotal' => $d->subtotal,
+                ]),
         ];
     }
 }

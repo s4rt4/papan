@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useAuth } from '@/hooks/use-page-props';
 import { cn, formatDate } from '@/lib/utils';
 
 interface InventarisItem {
@@ -26,6 +27,8 @@ const PERIODE_OPTIONS = [
 ];
 
 export default function Inventaris({ data, filters }: Props) {
+    const { user } = useAuth();
+    const isOwner = user?.level === 'owner';
     const [mode, setMode] = useState<'periode' | 'custom'>(filters.periode ? 'periode' : 'custom');
     const [periode, setPeriode] = useState(filters.periode || 'bulan_ini');
     const [dari, setDari] = useState(filters.dari || '');
@@ -147,6 +150,18 @@ export default function Inventaris({ data, filters }: Props) {
                                 </svg>
                                 Cetak PDF
                             </button>
+
+                            {isOwner && (
+                                <a
+                                    href={`/export/inventaris?dari=${filters.dari || ''}&sampai=${filters.sampai || ''}`}
+                                    className="inline-flex items-center gap-2 rounded-lg bg-green-500/10 px-3 py-2 text-sm font-medium text-green-600 transition-colors hover:bg-green-500/20 dark:text-green-400"
+                                >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                    </svg>
+                                    Export ke Sheets
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>
