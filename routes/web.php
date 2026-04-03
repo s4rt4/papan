@@ -215,9 +215,9 @@ Route::middleware('auth')->group(function () {
     Route::get('log', [LogController::class, 'index'])->name('log.index')->middleware('role:owner');
 
     // ==========================================================
-    // PESANAN ONLINE (admin) — owner only
+    // PESANAN ONLINE — owner + kasir
     // ==========================================================
-    Route::middleware('role:owner')->group(function () {
+    Route::middleware('role:owner,kasir')->group(function () {
         Route::get('orders', [OrderManagementController::class, 'index'])->name('orders.index');
         Route::get('orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
         Route::post('orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');

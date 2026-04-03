@@ -12,9 +12,11 @@ use App\Models\Pengeluaran;
 use App\Models\Penjualan;
 use App\Models\PenjualanDetail;
 use App\Models\PiutangPembayaran;
+use App\Models\LogAktivitas;
 use App\Models\Retur;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CetakController extends Controller
@@ -22,6 +24,17 @@ class CetakController extends Controller
     private function pengaturan(): Pengaturan
     {
         return Pengaturan::first();
+    }
+
+    private function logCetak(string $aktivitas): void
+    {
+        if (Auth::check()) {
+            LogAktivitas::create([
+                'user_id' => Auth::id(),
+                'aktivitas' => $aktivitas,
+                'tanggal' => now(),
+            ]);
+        }
     }
 
     public function struk(Penjualan $penjualan)
@@ -32,6 +45,7 @@ class CetakController extends Controller
         $pdf = Pdf::loadView('pdf.struk', compact('penjualan', 'pengaturan'))
             ->setPaper([0, 0, 212.6, 566.9]);
 
+        $this->logCetak("Cetak struk penjualan #{$penjualan->id}");
         return $pdf->stream('struk-' . $penjualan->id . '.pdf');
     }
 
@@ -56,6 +70,7 @@ class CetakController extends Controller
         $pdf = Pdf::loadView('pdf.laporan-pos', compact('penjualan', 'pengaturan', 'dari', 'sampai'))
             ->setPaper('a4', 'landscape');
 
+        $this->logCetak("Cetak laporan penjualan ({$dari} s/d {$sampai})");
         return $pdf->download('laporan-pos.pdf');
     }
 
@@ -67,6 +82,7 @@ class CetakController extends Controller
         $pdf = Pdf::loadView('pdf.struk-retur', compact('retur', 'pengaturan'))
             ->setPaper([0, 0, 212.6, 566.9]);
 
+        $this->logCetak("Cetak struk retur #{$retur->id}");
         return $pdf->stream('retur-' . $retur->id . '.pdf');
     }
 
@@ -129,6 +145,7 @@ class CetakController extends Controller
         $pdf = Pdf::loadView('pdf.laporan-inventaris', compact('data', 'pengaturan', 'dari', 'sampai'))
             ->setPaper('a4', 'landscape');
 
+        $this->logCetak("Cetak laporan inventaris ({$dari} s/d {$sampai})");
         return $pdf->download('laporan-inventaris.pdf');
     }
 
@@ -140,6 +157,7 @@ class CetakController extends Controller
         $pdf = Pdf::loadView('pdf.struk-cicilan', compact('pembayaran', 'pengaturan'));
         $pdf->setPaper([0, 0, 212.6, 566.9]);
 
+        $this->logCetak("Cetak struk cicilan #{$pembayaran->id}");
         return $pdf->stream("cicilan-{$pembayaran->id}.pdf");
     }
 
@@ -154,6 +172,7 @@ class CetakController extends Controller
         $pdf = Pdf::loadView('pdf.label-barcode', compact('barang', 'qty', 'pengaturan'))
             ->setPaper('a4', 'portrait');
 
+        $this->logCetak("Cetak label barcode (qty: {$request->input('qty', 21)})");
         return $pdf->stream('label-barcode.pdf');
     }
 
@@ -196,6 +215,7 @@ class CetakController extends Controller
         $pdf = Pdf::loadView('pdf.laba-rugi', $data)
             ->setPaper('a4', 'portrait');
 
+        $this->logCetak("Cetak laporan laba rugi (bulan: {$request->input('bulan')}/{$request->input('tahun')})");
         return $pdf->stream('laba-rugi.pdf');
     }
 }

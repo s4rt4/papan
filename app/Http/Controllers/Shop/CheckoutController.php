@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
+use App\Models\LogAktivitas;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -73,6 +74,12 @@ class CheckoutController extends Controller
 
             return $order;
         });
+
+        LogAktivitas::create([
+            'user_id' => 0,
+            'aktivitas' => "Pesanan online #{$order->order_number} oleh {$customer->nama_member} sebesar Rp " . number_format($order->total, 0, ',', '.'),
+            'tanggal' => now(),
+        ]);
 
         return redirect()->route('shop.orders.show', $order)
             ->with('success', 'Pesanan berhasil dibuat!');

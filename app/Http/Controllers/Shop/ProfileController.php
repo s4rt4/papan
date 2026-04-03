@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Models\LogAktivitas;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -35,6 +36,12 @@ class ProfileController extends Controller
         }
 
         $customer->save();
+
+        LogAktivitas::create([
+            'user_id' => 0,
+            'aktivitas' => "Customer update profil: {$customer->nama_member}",
+            'tanggal' => now(),
+        ]);
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     }

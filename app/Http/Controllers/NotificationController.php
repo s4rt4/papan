@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
+use App\Models\Order;
 use App\Models\Peminjaman;
 use App\Models\Piutang;
 use App\Models\StockOpname;
@@ -81,6 +82,34 @@ class NotificationController extends Controller
                     'title' => 'Total Piutang',
                     'message' => 'Rp ' . number_format($piutangTotal, 0, ',', '.') . ' belum terbayar',
                     'href' => '/piutang',
+                    'time' => now()->toISOString(),
+                ];
+            }
+        }
+
+        if (in_array($user->level, ['owner', 'kasir'])) {
+            // Pesanan online baru (pending)
+            $orderPending = Order::where('status', 'pending')->count();
+            if ($orderPending > 0) {
+                $notifications[] = [
+                    'id' => 'order-pending',
+                    'type' => 'warning',
+                    'title' => 'Pesanan Baru',
+                    'message' => "{$orderPending} pesanan menunggu konfirmasi",
+                    'href' => '/orders',
+                    'time' => now()->toISOString(),
+                ];
+            }
+
+            // Pesanan perlu dikirim (dikonfirmasi/diproses)
+            $orderProses = Order::whereIn('status', ['dikonfirmasi', 'diproses'])->count();
+            if ($orderProses > 0) {
+                $notifications[] = [
+                    'id' => 'order-proses',
+                    'type' => 'info',
+                    'title' => 'Pesanan Diproses',
+                    'message' => "{$orderProses} pesanan perlu ditindaklanjuti",
+                    'href' => '/orders',
                     'time' => now()->toISOString(),
                 ];
             }

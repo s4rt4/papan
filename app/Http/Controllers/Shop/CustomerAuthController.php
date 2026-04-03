@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Models\LogAktivitas;
 use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,12 @@ class CustomerAuthController extends Controller
 
         if (Auth::guard('customer')->attempt($request->only('email', 'password'))) {
             $request->session()->regenerate();
+
+            LogAktivitas::create([
+                'user_id' => 0,
+                'aktivitas' => "Customer login: {$request->email}",
+                'tanggal' => now(),
+            ]);
 
             return redirect()->intended('/shop');
         }
@@ -71,11 +78,24 @@ class CustomerAuthController extends Controller
 
         Auth::guard('customer')->login($member);
 
+        LogAktivitas::create([
+            'user_id' => 0,
+            'aktivitas' => "Customer registrasi: {$member->nama_member} ({$kodeMember})",
+            'tanggal' => now(),
+        ]);
+
         return redirect('/shop');
     }
 
     public function logout(Request $request)
     {
+        $name = Auth::guard('customer')->user()?->nama_member ?? 'Unknown';
+        LogAktivitas::create([
+            'user_id' => 0,
+            'aktivitas' => "Customer logout: {$name}",
+            'tanggal' => now(),
+        ]);
+
         Auth::guard('customer')->logout();
 
         $request->session()->invalidate();
